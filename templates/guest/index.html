@@ -1,0 +1,50 @@
+{% extends "base_guest.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content text-center">
+    <p class="eyebrow">Welcome to</p>
+    <h1>{{ hotel_name }}</h1>
+    <p class="lead">Quiet luxury, warm hospitality and rooms designed for restful stays.</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+      <a href="{{ url_for('guest.rooms') }}" class="btn btn-gold btn-lg">Explore Rooms</a>
+      <a href="{{ url_for('guest.register') }}" class="btn btn-light btn-lg">Create Account</a>
+    </div>
+  </div>
+</section>
+
+<section class="container py-5 mt-3">
+  <div class="text-center mb-5">
+    <p class="eyebrow-dark">Accommodation</p>
+    <h2>Rooms &amp; Suites</h2>
+  </div>
+  <div class="row g-4">
+    {% for item in featured %}
+      {% include "guest/_room_card.html" %}
+    {% endfor %}
+  </div>
+  <div class="text-center mt-4">
+    <a class="btn btn-gold" href="{{ url_for('guest.rooms') }}">VIEW ALL ROOMS</a>
+  </div>
+</section>
+
+<section class="container pb-5 mb-4">
+  <div class="row g-4 text-center">
+    <div class="col-md-4">
+      <i class="bi bi-moon-stars feature-icon"></i>
+      <h4>Restful Rooms</h4>
+      <p class="text-muted">Single, double and suite options with thoughtful amenities.</p>
+    </div>
+    <div class="col-md-4">
+      <i class="bi bi-calendar-check feature-icon"></i>
+      <h4>Easy Booking</h4>
+      <p class="text-muted">Search by date, pick a room and confirm in minutes.</p>
+    </div>
+    <div class="col-md-4">
+      <i class="bi bi-cup-hot feature-icon"></i>
+      <h4>Warm Hospitality</h4>
+      <p class="text-muted">Our team is on hand to make every stay memorable.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

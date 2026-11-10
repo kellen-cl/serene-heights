@@ -1,0 +1,9 @@
+{% macro status_badge(status) %}
+  {% set colors = {
+    'Pending': 'warning text-dark', 'Confirmed': 'success', 'Checked-In': 'primary',
+    'Completed': 'secondary', 'Cancelled': 'danger', 'Paid': 'success', 'Refunded': 'info text-dark',
+    'Available': 'success', 'Maintenance': 'warning text-dark',
+    'Active': 'success', 'Inactive': 'secondary'
+  } %}
+  <span class="badge bg-{{ colors.get(status, 'secondary') }}">{{ status }}</span>
+{% endmacro %}

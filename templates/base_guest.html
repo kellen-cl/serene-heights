@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ hotel_name }}{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/guest.css') }}" rel="stylesheet">
+  {% block head %}{% endblock %}
+</head>
+<body class="guest-body">
+  {% set ep = request.endpoint %}
+  <nav class="navbar navbar-expand-lg guest-nav fixed-top">
+    <div class="container">
+      <a class="navbar-brand brand" href="{{ url_for('guest.index') }}">
+        <i class="bi bi-buildings"></i> {{ hotel_name }}
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+          {% if current_user and current_user.role == 'GUEST' %}
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'guest.home' }}" href="{{ url_for('guest.home') }}">Home</a></li>
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('guest.rooms', 'guest.room_detail') }}" href="{{ url_for('guest.rooms') }}">Search Rooms</a></li>
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'guest.my_bookings' }}" href="{{ url_for('guest.my_bookings') }}">My Bookings</a></li>
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'guest.profile' }}" href="{{ url_for('guest.profile') }}">Profile</a></li>
+            <li class="nav-item">
+              <form method="post" action="{{ url_for('guest.logout') }}" class="d-inline">
+                <button class="btn btn-outline-gold btn-sm ms-lg-2" type="submit">Logout</button>
+              </form>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'guest.index' }}" href="{{ url_for('guest.index') }}">Home</a></li>
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep in ('guest.rooms', 'guest.room_detail') }}" href="{{ url_for('guest.rooms') }}">Rooms</a></li>
+            <li class="nav-item"><a class="nav-link {{ 'active' if ep == 'guest.login' }}" href="{{ url_for('guest.login') }}">Login</a></li>
+            <li class="nav-item"><a class="btn btn-gold btn-sm ms-lg-2" href="{{ url_for('guest.register') }}">Register</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container flash-wrap">{% include "_flash.html" %}</div>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="guest-footer">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+      <span class="brand">{{ hotel_name }}</span>
+      <span class="small">&copy; {{ current_year }} {{ hotel_name }}. All rights reserved.</span>
+      <a class="small" href="{{ url_for('admin.login') }}">Staff / Admin Login</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

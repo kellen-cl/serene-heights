@@ -1,0 +1,46 @@
+{% extends "base_guest.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}My Bookings | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">My Bookings</h2>
+    <a class="btn btn-gold btn-sm" href="{{ url_for('guest.rooms') }}">NEW BOOKING</a>
+  </div>
+
+  {% if bookings %}
+  <div class="soft-card p-0 table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>ID</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Status</th><th class="text-end">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>{{ b.reference }}</td>
+          <td>{{ b.room.room_number }} <small class="text-muted">({{ b.room.room_type }})</small></td>
+          <td>{{ b.check_in.strftime('%d %b %Y') }}</td>
+          <td>{{ b.check_out.strftime('%d %b %Y') }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(b.total_amount) }}</td>
+          <td>{{ status_badge(b.status) }}</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-outline-gold btn-sm" href="{{ url_for('guest.booking_confirmation', booking_id=b.booking_id) }}">VIEW</a>
+            {% if b.is_cancellable and b.check_in > today %}
+            <form method="post" action="{{ url_for('guest.cancel_booking', booking_id=b.booking_id) }}" class="d-inline"
+                  onsubmit="return confirm('Cancel booking {{ b.reference }}?');">
+              <button class="btn btn-outline-danger btn-sm" type="submit">CANCEL</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="soft-card text-center text-muted">
+    You have no bookings yet. <a href="{{ url_for('guest.rooms') }}">Find a room</a>.
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

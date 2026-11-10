@@ -1,0 +1,26 @@
+{% extends "base_admin.html" %}
+{% block title %}Staff Login | {{ hotel_name }}{% endblock %}
+{% block body %}
+<div class="admin-login-wrap">
+  <div class="admin-login-card">
+    <div class="text-center mb-4">
+      <div class="login-logo"><i class="bi bi-shield-lock"></i></div>
+      <h4 class="mb-0">Staff / Admin Login</h4>
+      <small class="text-muted">{{ hotel_name }}</small>
+    </div>
+    {% include "_flash.html" %}
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" required autofocus>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" type="password" id="password" name="password" required>
+      </div>
+      <button class="btn btn-primary w-100" type="submit">LOGIN</button>
+    </form>
+    <p class="text-center small mt-4 mb-0">Guest? <a href="{{ url_for('guest.login') }}">GUEST LOGIN</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base_guest.html" %}
+{% from "_macros.html" import status_badge %}
+{% block title %}{{ booking.reference }} | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="auth-card auth-card-wide mx-auto">
+    <div class="text-center mb-4">
+      {% if booking.status == 'Cancelled' %}
+        <i class="bi bi-x-circle feature-icon text-danger"></i><h2>Booking Cancelled</h2>
+      {% elif booking.status == 'Pending' %}
+        <i class="bi bi-hourglass-split feature-icon"></i><h2>Booking Received</h2>
+      {% else %}
+        <i class="bi bi-check-circle feature-icon"></i><h2>Booking Confirmed</h2>
+      {% endif %}
+      <p class="text-muted mb-0">Reference: <strong>{{ booking.reference }}</strong></p>
+    </div>
+
+    <table class="table table-borderless mb-0">
+      <tr><td class="text-muted">Guest</td><td class="text-end">{{ booking.guest.full_name }}</td></tr>
+      <tr><td class="text-muted">Room</td><td class="text-end">{{ booking.room.room_number }} ({{ booking.room.room_type }})</td></tr>
+      <tr><td class="text-muted">Dates</td>
+          <td class="text-end">{{ booking.check_in.strftime('%d %b') }} &ndash; {{ booking.check_out.strftime('%d %b %Y') }}
+            ({{ booking.nights }} night{{ 's' if booking.nights != 1 }})</td></tr>
+      <tr><td class="text-muted">Guests</td><td class="text-end">{{ booking.num_guests }}</td></tr>
+      <tr><td class="text-muted">Total</td><td class="text-end fw-semibold">{{ currency }}{{ "%.2f"|format(booking.total_amount) }}</td></tr>
+      <tr><td class="text-muted">Payment</td>
+          <td class="text-end">
+            {% if booking.payment %}{{ booking.payment.method }} &middot; {{ status_badge(booking.payment.status) }}{% else %}&mdash;{% endif %}
+          </td></tr>
+      <tr><td class="text-muted">Booking status</td><td class="text-end">{{ status_badge(booking.status) }}</td></tr>
+    </table>
+
+    {% if booking.payment and booking.payment.status == 'Pending' and booking.status != 'Cancelled' %}
+      <div class="alert alert-warning small mt-3 mb-0">Please pay {{ currency }}{{ "%.2f"|format(booking.total_amount) }} in cash at the hotel on arrival.</div>
+    {% endif %}
+
+    <div class="d-flex gap-2 mt-4">
+      <a class="btn btn-gold flex-grow-1" href="{{ url_for('guest.my_bookings') }}">VIEW MY BOOKINGS</a>
+      <a class="btn btn-outline-gold" href="{{ url_for('guest.home') }}">BACK TO HOME</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

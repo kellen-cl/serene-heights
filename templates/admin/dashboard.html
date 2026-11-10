@@ -1,0 +1,63 @@
+{% extends "base_admin.html" %}
+{% from "_macros.html" import status_badge %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-door-open"></i></div>
+      <div><div class="stat-label">Rooms</div><div class="stat-value">{{ stats.total_rooms }}</div>
+        <small class="text-muted">{{ stats.free_rooms }} free today &middot; {{ stats.maintenance_rooms }} maintenance</small></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-success-subtle text-success"><i class="bi bi-people"></i></div>
+      <div><div class="stat-label">Guests</div><div class="stat-value">{{ stats.total_guests }}</div>
+        <small class="text-muted">registered accounts</small></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-calendar-check"></i></div>
+      <div><div class="stat-label">Bookings</div><div class="stat-value">{{ stats.total_bookings }}</div>
+        <small class="text-muted">{{ stats.arrivals_today }} arriving today &middot; {{ stats.checked_in }} in-house</small></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-info-subtle text-info"><i class="bi bi-cash-stack"></i></div>
+      <div><div class="stat-label">Revenue (paid)</div><div class="stat-value">{{ currency }}{{ "{:,.0f}".format(stats.revenue) }}</div>
+        <small class="text-muted">{{ stats.pending_payments }} payment{{ 's' if stats.pending_payments != 1 }} pending</small></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Recent bookings</h5>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.bookings') }}">VIEW ALL</a>
+  </div>
+  {% if stats.recent_bookings %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Dates</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for b in stats.recent_bookings %}
+        <tr>
+          <td>{{ b.reference }}</td>
+          <td>{{ b.guest.full_name }}</td>
+          <td>{{ b.room.room_number }}</td>
+          <td>{{ b.check_in.strftime('%d %b') }} &ndash; {{ b.check_out.strftime('%d %b %Y') }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(b.total_amount) }}</td>
+          <td>{{ status_badge(b.status) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted mb-0">No bookings yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base_guest.html" %}
+{% block title %}Guest Login | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="auth-card mx-auto">
+      <div class="text-center mb-4">
+        <h2>Guest Login</h2>
+        <p class="text-muted">Sign in to manage your stay.</p>
+      </div>
+      <form method="post" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="username">Username or email</label>
+          <input class="form-control" id="username" name="username" required autofocus>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-control" type="password" id="password" name="password" required>
+        </div>
+        <button class="btn btn-gold w-100" type="submit">LOGIN</button>
+      </form>
+      <hr class="my-4">
+      <p class="text-center small mb-1">No account? <a href="{{ url_for('guest.register') }}">Register here</a></p>
+      <p class="text-center small mb-0">Staff/Admin? <a href="{{ url_for('admin.login') }}">Admin Login</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

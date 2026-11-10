@@ -1,0 +1,8 @@
+{% extends "base_guest.html" %}
+{% block content %}
+<section class="container page-section text-center">
+  <h2>{{ title }}</h2>
+  <p class="text-muted">This page is built in Stage {{ stage }}.</p>
+  <a class="btn btn-outline-gold" href="{{ url_for('guest.index') }}">Back to Home</a>
+</section>
+{% endblock %}

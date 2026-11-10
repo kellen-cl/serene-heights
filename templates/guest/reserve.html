@@ -1,0 +1,93 @@
+{% extends "base_guest.html" %}
+{% block title %}Reservation | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <h2 class="mb-1">Reservation Summary</h2>
+  <p class="text-muted mb-4">Review your stay and choose how you would like to pay.</p>
+
+  <form method="post" action="{{ url_for('guest.reserve', room_id=room.room_id) }}">
+    <input type="hidden" name="check_in" value="{{ check_in.isoformat() }}">
+    <input type="hidden" name="check_out" value="{{ check_out.isoformat() }}">
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="soft-card mb-4">
+          <div class="d-flex gap-3 align-items-center">
+            <img src="{{ room_image(room.room_type) }}" alt="" width="120" height="90"
+                 class="rounded-3" style="object-fit:cover"
+                 onerror="this.onerror=null;this.src='{{ fallback_image }}'">
+            <div>
+              <h5 class="mb-0">Room {{ room.room_number }} ({{ room.room_type }})</h5>
+              <small class="text-muted">{{ currency }}{{ "%.0f"|format(room.price_per_night) }} per night</small>
+            </div>
+          </div>
+          <hr>
+          <div class="row g-3">
+            <div class="col-6"><small class="text-muted d-block">Check-in</small>{{ check_in.strftime('%a, %d %b %Y') }}</div>
+            <div class="col-6"><small class="text-muted d-block">Check-out</small>{{ check_out.strftime('%a, %d %b %Y') }}</div>
+            <div class="col-6"><small class="text-muted d-block">Nights</small>{{ nights }}</div>
+            <div class="col-6">
+              <label class="form-label mb-0" for="guests">Guests</label>
+              <select class="form-select form-select-sm" id="guests" name="guests">
+                {% for g in range(1, room.capacity + 1) %}
+                  <option value="{{ g }}" {{ 'selected' if g == num_guests }}>{{ g }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="soft-card">
+          <h6 class="mb-3">Guest details</h6>
+          <div class="row g-3 small">
+            <div class="col-md-6"><span class="text-muted d-block">Name</span>{{ guest.full_name }}</div>
+            <div class="col-md-6"><span class="text-muted d-block">Phone</span>{{ guest.phone }}</div>
+            <div class="col-12"><span class="text-muted d-block">Email</span>{{ user.email }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="soft-card mb-4">
+          <h6 class="mb-3">Payment method</h6>
+          {% for m in methods %}
+          <div class="form-check border rounded-3 p-3 ps-5 mb-2 bg-white">
+            <input class="form-check-input" type="radio" name="payment_method" id="pm{{ loop.index }}"
+                   value="{{ m }}" {{ 'checked' if method == m or (not method and loop.first) }}>
+            <label class="form-check-label w-100" for="pm{{ loop.index }}">
+              {{ m }}
+              <small class="text-muted d-block">
+                {% if m == 'Cash' %}Pay at the hotel. Booking stays Pending until confirmed by staff.
+                {% else %}Simulated payment. Marked Paid instantly and the booking is confirmed.{% endif %}
+              </small>
+            </label>
+          </div>
+          {% endfor %}
+          <small class="text-muted">No real payment is taken. This is a demonstration system.</small>
+        </div>
+
+        <div class="soft-card">
+          <h6 class="mb-3">Price</h6>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ nights }} night{{ 's' if nights != 1 }} &times; {{ currency }}{{ "%.2f"|format(room.price_per_night) }}</span>
+            <span>{{ currency }}{{ "%.2f"|format(subtotal) }}</span>
+          </div>
+          {% if discount > 0 %}
+          <div class="d-flex justify-content-between small mb-1 text-success">
+            <span>Long-stay suite discount (10%)</span><span>&minus;{{ currency }}{{ "%.2f"|format(discount) }}</span>
+          </div>
+          {% endif %}
+          <hr>
+          <div class="d-flex justify-content-between fw-semibold fs-5">
+            <span>TOTAL</span><span>{{ currency }}{{ "%.2f"|format(total) }}</span>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-gold flex-grow-1" type="submit">CONFIRM BOOKING</button>
+            <a class="btn btn-outline-gold" href="{{ url_for('guest.room_detail', room_id=room.room_id, check_in=check_in.isoformat(), check_out=check_out.isoformat(), guests=num_guests) }}">CANCEL</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+{% endblock %}

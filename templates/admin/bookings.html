@@ -1,0 +1,85 @@
+{% extends "base_admin.html" %}
+{% from "_macros.html" import status_badge %}
+{% block page_title %}Booking Management{% endblock %}
+{% block content %}
+<div class="panel">
+  <form class="d-flex flex-wrap gap-2 mb-3" method="get">
+    <select class="form-select form-select-sm" name="status" style="width:auto" onchange="this.form.submit()">
+      <option value="">All statuses</option>
+      {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if status_f == s }}>{{ s }}</option>{% endfor %}
+    </select>
+    <input class="form-control form-control-sm" name="q" value="{{ term }}" placeholder="Guest, room or booking ID" style="width:240px">
+    <button class="btn btn-primary btn-sm" type="submit">SEARCH</button>
+    {% if status_f or term %}<a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.bookings') }}">Clear</a>{% endif %}
+  </form>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Payment</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>{{ b.reference }}</td>
+          <td>{{ b.guest.full_name }}</td>
+          <td>{{ b.room.room_number }}</td>
+          <td>{{ b.check_in.strftime('%d %b %Y') }}</td>
+          <td>{{ b.check_out.strftime('%d %b %Y') }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(b.total_amount) }}</td>
+          <td>{% if b.payment %}{{ status_badge(b.payment.status) }}{% else %}&mdash;{% endif %}</td>
+          <td>{{ status_badge(b.status) }}</td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#view{{ b.booking_id }}">VIEW</button>
+
+            {% if b.status == 'Pending' %}
+              <form class="d-inline" method="post" action="{{ url_for('admin.booking_action', booking_id=b.booking_id, action='confirm') }}">
+                <button class="btn btn-outline-success btn-sm" type="submit">CONFIRM</button>
+              </form>
+            {% elif b.status == 'Confirmed' %}
+              <form class="d-inline" method="post" action="{{ url_for('admin.booking_action', booking_id=b.booking_id, action='check-in') }}">
+                <button class="btn btn-outline-primary btn-sm" type="submit"
+                  {% if enforce_checkin and b.check_in > today %}disabled title="Check-in opens on {{ b.check_in.strftime('%d %b') }}"{% endif %}>CHECK-IN</button>
+              </form>
+            {% elif b.status == 'Checked-In' %}
+              <form class="d-inline" method="post" action="{{ url_for('admin.booking_action', booking_id=b.booking_id, action='check-out') }}">
+                <button class="btn btn-outline-primary btn-sm" type="submit">CHECK-OUT</button>
+              </form>
+            {% endif %}
+
+            {% if b.is_cancellable %}
+              <form class="d-inline" method="post" action="{{ url_for('admin.booking_action', booking_id=b.booking_id, action='cancel') }}"
+                    onsubmit="return confirm('Cancel booking {{ b.reference }}? A paid payment will be refunded.');">
+                <button class="btn btn-outline-danger btn-sm" type="submit">CANCEL</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No bookings found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <small class="text-muted d-block mt-3">Showing the 200 most recent matching bookings.</small>
+</div>
+
+{% for b in bookings %}
+<div class="modal fade" id="view{{ b.booking_id }}" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Booking {{ b.reference }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <table class="table table-sm table-borderless mb-0">
+        <tr><td class="text-muted">Guest</td><td>{{ b.guest.full_name }} ({{ b.guest.phone }})</td></tr>
+        <tr><td class="text-muted">Room</td><td>{{ b.room.room_number }} ({{ b.room.room_type }})</td></tr>
+        <tr><td class="text-muted">Stay</td><td>{{ b.check_in.strftime('%d %b %Y') }} &ndash; {{ b.check_out.strftime('%d %b %Y') }} ({{ b.nights }} night{{ 's' if b.nights != 1 }})</td></tr>
+        <tr><td class="text-muted">Guests</td><td>{{ b.num_guests }}</td></tr>
+        <tr><td class="text-muted">Total</td><td>{{ currency }}{{ "%.2f"|format(b.total_amount) }}</td></tr>
+        <tr><td class="text-muted">Payment</td><td>{% if b.payment %}{{ b.payment.method }} {{ status_badge(b.payment.status) }}{% else %}&mdash;{% endif %}</td></tr>
+        <tr><td class="text-muted">Status</td><td>{{ status_badge(b.status) }}</td></tr>
+        <tr><td class="text-muted">Created</td><td>{{ b.created_at.strftime('%d %b %Y %H:%M') }}</td></tr>
+        <tr><td class="text-muted">Handled by</td><td>{{ b.handler.full_name if b.handler else '—' }}</td></tr>
+      </table>
+    </div>
+  </div></div>
+</div>
+{% endfor %}
+{% endblock %}

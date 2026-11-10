@@ -1,0 +1,75 @@
+{% extends "base_guest.html" %}
+{% block title %}Rooms | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <h2 class="mb-1">Find Your Room</h2>
+  <p class="text-muted mb-4">Choose your dates to see what is available.</p>
+
+  <form class="search-card" method="get" action="{{ url_for('guest.rooms') }}" id="searchForm">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label" for="check_in">Check-in</label>
+        <input class="form-control" type="date" id="check_in" name="check_in"
+               value="{{ form.check_in }}" min="{{ today }}" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="check_out">Check-out</label>
+        <input class="form-control" type="date" id="check_out" name="check_out"
+               value="{{ form.check_out }}" min="{{ tomorrow }}" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="guests">Guests</label>
+        <select class="form-select" id="guests" name="guests">
+          {% for n in range(1, 7) %}
+            <option value="{{ n }}" {{ 'selected' if form.guests == n|string }}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label" for="room_type">Room type</label>
+        <select class="form-select" id="room_type" name="room_type">
+          <option value="">Any</option>
+          {% for t in room_types %}
+            <option value="{{ t }}" {{ 'selected' if form.room_type == t }}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-gold flex-grow-1" type="submit">SEARCH</button>
+        <a class="btn btn-outline-gold" href="{{ url_for('guest.rooms') }}">CLEAR</a>
+      </div>
+    </div>
+  </form>
+
+  {% if results is not none %}
+    <div class="results-bar">
+      <strong>Results:</strong>
+      {{ summary.check_in.strftime('%d %b') }} &ndash; {{ summary.check_out.strftime('%d %b %Y') }}
+      ({{ summary.nights }} night{{ 's' if summary.nights != 1 }}) &middot;
+      {{ summary.guests }} guest{{ 's' if summary.guests != 1 }}
+    </div>
+    {% if results %}
+      <div class="row g-4">
+        {% for item in results %}
+          {% include "guest/_room_card.html" %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="soft-card text-center text-muted">
+        No rooms are available for those dates. Try different dates or fewer guests.
+      </div>
+    {% endif %}
+  {% else %}
+    <h5 class="mb-3">Our rooms</h5>
+    {% if browse %}
+      <div class="row g-4">
+        {% for item in browse %}
+          {% include "guest/_room_card.html" %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="soft-card text-center text-muted">No rooms found.</div>
+    {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

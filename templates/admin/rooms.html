@@ -1,0 +1,115 @@
+{% extends "base_admin.html" %}
+{% from "_macros.html" import status_badge %}
+{% block page_title %}Room Management{% endblock %}
+
+{% macro room_fields(room=none) %}
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Room number</label>
+      <input class="form-control" name="room_number" maxlength="10" value="{{ room.room_number if room }}" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Type</label>
+      {% if room %}
+        <input class="form-control" value="{{ room.room_type }}" disabled>
+      {% else %}
+        <select class="form-select" name="room_type" required>
+          {% for t in types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+        </select>
+      {% endif %}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Price / night</label>
+      <input class="form-control" type="number" step="0.01" min="0.01" name="price_per_night" value="{{ room.price_per_night if room }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Capacity</label>
+      <input class="form-control" type="number" min="1" max="10" name="capacity" value="{{ room.capacity if room }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Status</label>
+      <select class="form-select" name="status">
+        {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if room and room.status == s }}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Amenities <small class="text-muted">(comma separated)</small></label>
+      <input class="form-control" name="amenities" value="{{ room.amenities or '' if room }}">
+    </div>
+    <div class="col-12">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" name="description" rows="3">{{ room.description or '' if room }}</textarea>
+    </div>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="panel">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <form class="d-flex gap-2" method="get">
+      <select class="form-select form-select-sm" name="type" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for t in types %}<option value="{{ t }}" {{ 'selected' if type_f == t }}>{{ t }}</option>{% endfor %}
+      </select>
+      <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if status_f == s }}>{{ s }}</option>{% endfor %}
+      </select>
+      {% if type_f or status_f %}<a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.rooms') }}">Clear</a>{% endif %}
+    </form>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+      <i class="bi bi-plus-lg"></i> ADD ROOM
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Room</th><th>Type</th><th>Capacity</th><th>Price</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for r in rooms %}
+        <tr>
+          <td class="fw-semibold">{{ r.room_number }}</td>
+          <td>{{ r.room_type }}</td>
+          <td>{{ r.capacity }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(r.price_per_night) }}</td>
+          <td>{{ status_badge(r.status) }}</td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editRoom{{ r.room_id }}">EDIT</button>
+            <form class="d-inline" method="post" action="{{ url_for('admin.delete_room', room_id=r.room_id) }}"
+                  onsubmit="return confirm('Delete room {{ r.room_number }}? This cannot be undone.');">
+              <button class="btn btn-outline-danger btn-sm" type="submit">DELETE</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No rooms found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add room pop-up -->
+<div class="modal fade" id="addRoomModal" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <form method="post" action="{{ url_for('admin.add_room') }}">
+      <div class="modal-header"><h5 class="modal-title">Add room</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">{{ room_fields() }}</div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">CANCEL</button><button class="btn btn-primary" type="submit">SAVE ROOM</button></div>
+    </form>
+  </div></div>
+</div>
+
+<!-- Edit room pop-ups -->
+{% for r in rooms %}
+<div class="modal fade" id="editRoom{{ r.room_id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <form method="post" action="{{ url_for('admin.edit_room', room_id=r.room_id) }}">
+      <div class="modal-header"><h5 class="modal-title">Edit room {{ r.room_number }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">{{ room_fields(r) }}</div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">CANCEL</button><button class="btn btn-primary" type="submit">SAVE CHANGES</button></div>
+    </form>
+  </div></div>
+</div>
+{% endfor %}
+{% endblock %}

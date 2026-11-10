@@ -1,0 +1,48 @@
+{% extends "base_guest.html" %}
+{% block title %}Dashboard | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <h2 class="mb-1">Welcome, {{ guest.full_name.split()[0] }}!</h2>
+  <p class="text-muted mb-4">What would you like to do today?</p>
+
+  <div class="row g-3 mb-5">
+    <div class="col-md-4">
+      <a class="tile" href="{{ url_for('guest.rooms') }}">
+        <i class="bi bi-search"></i><span>SEARCH ROOMS</span>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a class="tile" href="{{ url_for('guest.my_bookings') }}">
+        <i class="bi bi-journal-bookmark"></i><span>MY BOOKINGS</span>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a class="tile" href="{{ url_for('guest.profile') }}">
+        <i class="bi bi-person"></i><span>PROFILE</span>
+      </a>
+    </div>
+  </div>
+
+  <h5 class="mb-3">Your next booking</h5>
+  {% if next_booking %}
+  <div class="soft-card d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <strong>{{ next_booking.reference }}</strong> &middot; Room {{ next_booking.room.room_number }}
+      ({{ next_booking.room.room_type }})<br>
+      <span class="text-muted">
+        {{ next_booking.check_in.strftime('%d %b %Y') }} &ndash; {{ next_booking.check_out.strftime('%d %b %Y') }}
+        ({{ next_booking.nights }} night{{ 's' if next_booking.nights != 1 }})
+      </span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span class="badge badge-soft">{{ next_booking.status }}</span>
+      <a class="btn btn-outline-gold btn-sm" href="{{ url_for('guest.my_bookings') }}">VIEW</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="soft-card text-muted">
+    You have no upcoming bookings. <a href="{{ url_for('guest.rooms') }}">Find a room</a>.
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

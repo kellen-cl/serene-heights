@@ -1,0 +1,102 @@
+{% extends "base_admin.html" %}
+{% from "_macros.html" import status_badge %}
+{% block page_title %}Staff Management{% endblock %}
+
+{% macro staff_fields(s=none) %}
+  <div class="row g-3">
+    <div class="col-12">
+      <label class="form-label">Full name</label>
+      <input class="form-control" name="full_name" value="{{ s.full_name if s }}" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Username</label>
+      {% if s %}<input class="form-control" value="{{ s.user.username }}" disabled>
+      {% else %}<input class="form-control" name="username" required>{% endif %}
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Email</label>
+      <input class="form-control" type="email" name="email" value="{{ s.user.email if s }}" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Phone</label>
+      <input class="form-control" name="phone" value="{{ s.phone if s }}" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Position</label>
+      <input class="form-control" name="position" maxlength="50" value="{{ s.position if s }}" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Role</label>
+      <select class="form-select" name="role" {{ 'disabled' if s and s.user_id == current_user.user_id }}>
+        {% for r in roles %}<option value="{{ r }}" {{ 'selected' if s and s.user.role == r }}>{{ r }}</option>{% endfor %}
+      </select>
+    </div>
+    {% if not s %}
+    <div class="col-md-6">
+      <label class="form-label">Password</label>
+      <input class="form-control" type="password" name="password" minlength="6" required>
+    </div>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="panel">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted small">Only administrators can see this page.</span>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+      <i class="bi bi-plus-lg"></i> ADD STAFF
+    </button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Role</th><th>Active</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for s in staff_list %}
+        <tr>
+          <td>{{ s.staff_id }}</td>
+          <td class="fw-semibold">{{ s.full_name }}{% if s.user_id == current_user.user_id %} <small class="text-muted">(you)</small>{% endif %}</td>
+          <td>{{ s.position }}</td>
+          <td><span class="badge role-badge">{{ s.user.role }}</span></td>
+          <td>{{ status_badge('Active' if s.user.is_active else 'Inactive') }}</td>
+          <td class="text-end text-nowrap">
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editStaff{{ s.staff_id }}">EDIT</button>
+            {% if s.user_id != current_user.user_id %}
+            <form class="d-inline" method="post" action="{{ url_for('admin.toggle_staff', staff_id=s.staff_id) }}"
+                  onsubmit="return confirm('{{ 'Deactivate' if s.user.is_active else 'Activate' }} {{ s.full_name }}?');">
+              <button class="btn btn-outline-{{ 'danger' if s.user.is_active else 'success' }} btn-sm" type="submit">
+                {{ 'DEACTIVATE' if s.user.is_active else 'ACTIVATE' }}
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="addStaffModal" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <form method="post" action="{{ url_for('admin.add_staff') }}">
+      <div class="modal-header"><h5 class="modal-title">Add staff</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">{{ staff_fields() }}</div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">CANCEL</button><button class="btn btn-primary" type="submit">SAVE STAFF</button></div>
+    </form>
+  </div></div>
+</div>
+
+{% for s in staff_list %}
+<div class="modal fade" id="editStaff{{ s.staff_id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <form method="post" action="{{ url_for('admin.edit_staff', staff_id=s.staff_id) }}">
+      <div class="modal-header"><h5 class="modal-title">Edit {{ s.full_name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">{{ staff_fields(s) }}</div>
+      <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">CANCEL</button><button class="btn btn-primary" type="submit">SAVE CHANGES</button></div>
+    </form>
+  </div></div>
+</div>
+{% endfor %}
+{% endblock %}

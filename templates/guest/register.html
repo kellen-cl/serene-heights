@@ -1,0 +1,50 @@
+{% extends "base_guest.html" %}
+{% block title %}Create Account | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="container">
+    <div class="auth-card auth-card-wide mx-auto">
+      <div class="text-center mb-4">
+        <h2>Create Account</h2>
+        <p class="text-muted">Register to book rooms and track your stays.</p>
+      </div>
+      <form method="post" id="registerForm" novalidate>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label" for="full_name">Full name</label>
+            <input class="form-control" id="full_name" name="full_name" value="{{ form.get('full_name', '') }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" type="email" id="email" name="email" value="{{ form.get('email', '') }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="phone">Phone</label>
+            <input class="form-control" id="phone" name="phone" value="{{ form.get('phone', '') }}" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="id_number">ID / Passport number</label>
+            <input class="form-control" id="id_number" name="id_number" value="{{ form.get('id_number', '') }}" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="username">Username</label>
+            <input class="form-control" id="username" name="username" value="{{ form.get('username', '') }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="password">Password</label>
+            <input class="form-control" type="password" id="password" name="password" minlength="6" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="confirm_password">Confirm password</label>
+            <input class="form-control" type="password" id="confirm_password" name="confirm_password" required>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-gold flex-grow-1" type="submit">REGISTER</button>
+          <a class="btn btn-outline-gold" href="{{ url_for('guest.login') }}">CANCEL</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

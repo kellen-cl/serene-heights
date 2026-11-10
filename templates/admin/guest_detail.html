@@ -1,0 +1,45 @@
+{% extends "base_admin.html" %}
+{% from "_macros.html" import status_badge %}
+{% block page_title %}Guest #{{ guest.guest_id }}{% endblock %}
+{% block content %}
+<a class="small text-decoration-none" href="{{ url_for('admin.guests') }}"><i class="bi bi-arrow-left"></i> BACK TO GUESTS</a>
+
+<div class="panel mt-3 mb-4">
+  <div class="d-flex justify-content-between align-items-start">
+    <h5 class="mb-3">{{ guest.full_name }}</h5>
+    {{ status_badge('Active' if guest.user.is_active else 'Inactive') }}
+  </div>
+  <div class="row g-3 small">
+    <div class="col-md-3"><span class="text-muted d-block">Username</span>{{ guest.user.username }}</div>
+    <div class="col-md-3"><span class="text-muted d-block">Email</span>{{ guest.user.email }}</div>
+    <div class="col-md-3"><span class="text-muted d-block">Phone</span>{{ guest.phone }}</div>
+    <div class="col-md-3"><span class="text-muted d-block">ID / Passport</span>{{ guest.id_number }}</div>
+    <div class="col-12"><span class="text-muted d-block">Address</span>{{ guest.address or '—' }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h5 class="mb-3">Booking history</h5>
+  {% if bookings %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>ID</th><th>Room</th><th>Dates</th><th>Total</th><th>Booking</th><th>Payment</th></tr></thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>{{ b.reference }}</td>
+          <td>{{ b.room.room_number }} <small class="text-muted">({{ b.room.room_type }})</small></td>
+          <td>{{ b.check_in.strftime('%d %b') }} &ndash; {{ b.check_out.strftime('%d %b %Y') }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(b.total_amount) }}</td>
+          <td>{{ status_badge(b.status) }}</td>
+          <td>{% if b.payment %}{{ b.payment.method }} {{ status_badge(b.payment.status) }}{% else %}&mdash;{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted mb-0">This guest has no bookings.</p>
+  {% endif %}
+</div>
+{% endblock %}

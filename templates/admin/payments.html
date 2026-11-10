@@ -1,0 +1,59 @@
+{% extends "base_admin.html" %}
+{% from "_macros.html" import status_badge %}
+{% block page_title %}Payment Management{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="stat-card"><div class="stat-icon bg-success-subtle text-success"><i class="bi bi-check-circle"></i></div>
+    <div><div class="stat-label">Paid</div><div class="stat-value">{{ currency }}{{ "{:,.0f}".format(summary.paid) }}</div></div></div></div>
+  <div class="col-md-4"><div class="stat-card"><div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-hourglass-split"></i></div>
+    <div><div class="stat-label">Pending</div><div class="stat-value">{{ currency }}{{ "{:,.0f}".format(summary.pending) }}</div>
+      <small class="text-muted">{{ summary.pending_count }} payment{{ 's' if summary.pending_count != 1 }}</small></div></div></div>
+  <div class="col-md-4"><div class="stat-card"><div class="stat-icon bg-info-subtle text-info"><i class="bi bi-arrow-counterclockwise"></i></div>
+    <div><div class="stat-label">Refunded</div><div class="stat-value">{{ currency }}{{ "{:,.0f}".format(summary.refunded) }}</div></div></div></div>
+</div>
+
+<div class="panel">
+  <form class="d-flex gap-2 mb-3" method="get">
+    <select class="form-select form-select-sm" name="status" style="width:auto" onchange="this.form.submit()">
+      <option value="">All statuses</option>
+      {% for s in ('Pending', 'Paid', 'Refunded') %}<option value="{{ s }}" {{ 'selected' if status_f == s }}>{{ s }}</option>{% endfor %}
+    </select>
+    {% if status_f %}<a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.payments') }}">Clear</a>{% endif %}
+  </form>
+
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>ID</th><th>Booking</th><th>Guest</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th><th>Processed by</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.payment_id }}</td>
+          <td>{{ p.booking.reference }}</td>
+          <td>{{ p.booking.guest.full_name }}</td>
+          <td>{{ currency }}{{ "%.2f"|format(p.amount) }}</td>
+          <td>{{ p.method }}</td>
+          <td>{{ status_badge(p.status) }}</td>
+          <td>{{ p.payment_date.strftime('%d %b %Y') if p.payment_date else '—' }}</td>
+          <td>{{ p.processor.full_name if p.processor else '—' }}</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.bookings', q=p.booking_id) }}">VIEW</a>
+            {% if p.status == 'Pending' and p.booking.status != 'Cancelled' %}
+              <form class="d-inline" method="post" action="{{ url_for('admin.payment_action', payment_id=p.payment_id, action='mark-paid') }}">
+                <button class="btn btn-outline-success btn-sm" type="submit">MARK AS PAID</button>
+              </form>
+            {% elif p.status == 'Paid' %}
+              <form class="d-inline" method="post" action="{{ url_for('admin.payment_action', payment_id=p.payment_id, action='refund') }}"
+                    onsubmit="return confirm('Refund {{ currency }}{{ '%.2f'|format(p.amount) }}? An active booking will also be cancelled.');">
+                <button class="btn btn-outline-danger btn-sm" type="submit">REFUND</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No payments found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

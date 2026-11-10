@@ -1,0 +1,63 @@
+{% extends "base_guest.html" %}
+{% block title %}Profile | {{ hotel_name }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <h2 class="mb-4">My Profile</h2>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <form class="soft-card" method="post" action="{{ url_for('guest.profile') }}" novalidate>
+        <h5 class="mb-3">Personal information</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Username</label>
+            <input class="form-control" value="{{ user.username }}" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ID / Passport</label>
+            <input class="form-control" value="{{ user.guest.id_number }}" disabled>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="full_name">Full name</label>
+            <input class="form-control" id="full_name" name="full_name" value="{{ form.get('full_name', user.guest.full_name) }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" type="email" id="email" name="email" value="{{ form.get('email', user.email) }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="phone">Phone</label>
+            <input class="form-control" id="phone" name="phone" value="{{ form.get('phone', user.guest.phone) }}" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="address">Address</label>
+            <input class="form-control" id="address" name="address" value="{{ form.get('address', user.guest.address or '') }}">
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-gold" type="submit">SAVE CHANGES</button>
+          <a class="btn btn-outline-gold" href="{{ url_for('guest.home') }}">BACK</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-lg-5">
+      <form class="soft-card" method="post" action="{{ url_for('guest.change_password') }}" novalidate>
+        <h5 class="mb-3">Change password</h5>
+        <div class="mb-3">
+          <label class="form-label" for="current_password">Current password</label>
+          <input class="form-control" type="password" id="current_password" name="current_password" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="new_password">New password</label>
+          <input class="form-control" type="password" id="new_password" name="new_password" minlength="6" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="confirm_password">Confirm new password</label>
+          <input class="form-control" type="password" id="confirm_password" name="confirm_password" required>
+        </div>
+        <button class="btn btn-outline-gold" type="submit">CHANGE PASSWORD</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

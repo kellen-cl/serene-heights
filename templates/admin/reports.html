@@ -1,0 +1,67 @@
+{% extends "base_admin.html" %}
+{% block page_title %}Reports{% endblock %}
+
+{% macro cell(value, kind) -%}
+  {%- if kind == 'money' -%}{{ currency }}{{ "{:,.2f}".format(value) }}
+  {%- elif kind == 'pct' -%}{{ "%.1f"|format(value) }}%
+  {%- else -%}{{ value }}{%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+<div class="panel mb-4">
+  <form method="get" action="{{ url_for('admin.reports') }}">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small">Report type</label>
+        <select class="form-select" name="type">
+          {% for key, label in report_types %}<option value="{{ key }}" {{ 'selected' if form.type == key }}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">From</label>
+        <input class="form-control" type="date" name="start" value="{{ form.start }}" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">To</label>
+        <input class="form-control" type="date" name="end" value="{{ form.end }}" required>
+      </div>
+      <div class="col-md-5 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">GENERATE</button>
+        <button class="btn btn-outline-primary" type="submit" name="export" value="1">EXPORT CSV</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.reports') }}">CLEAR</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if result %}
+<div class="row g-3 mb-4">
+  {% for label, value, kind in result.summary %}
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card"><div>
+      <div class="stat-label">{{ label|trim }}</div>
+      <div class="stat-value fs-4">{{ cell(value, kind) }}</div>
+    </div></div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="panel">
+  <h5 class="mb-3">{{ result.title }} <small class="text-muted fs-6">{{ form.start }} to {{ form.end }}</small></h5>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr>{% for label, kind in result.columns %}<th>{{ label }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for row in result.rows %}
+        <tr>{% for v in row %}<td>{{ cell(v, result.columns[loop.index0][1]) }}</td>{% endfor %}</tr>
+        {% else %}
+        <tr><td colspan="{{ result.columns|length }}" class="text-center text-muted py-4">No records in this period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="panel text-center text-muted">Choose a report type and date range, then click GENERATE.</div>
+{% endif %}
+{% endblock %}
